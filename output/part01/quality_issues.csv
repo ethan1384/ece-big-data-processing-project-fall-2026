@@ -1,0 +1,68 @@
+check,table,affected,unit,handling
+null or malformed tconst,title.basics,0,rows,drop row
+null primaryTitle,title.basics,0,rows,drop row
+null titleType,title.basics,0,rows,drop row
+duplicate tconst,title.basics,0,extra rows,keep one row
+isAdult other than 0 or 1,title.basics,0,rows,set isAdult to null
+startYear not an integer,title.basics,0,rows,set startYear to null
+startYear outside 1870-2036,title.basics,1,rows,set startYear to null
+endYear not an integer,title.basics,0,rows,set endYear to null
+endYear outside 1870-2036,title.basics,0,rows,set endYear to null
+endYear before startYear,title.basics,0,rows,set endYear to null
+endYear set on a title that is not a series,title.basics,0,rows,set endYear to null
+runtimeMinutes not an integer,title.basics,0,rows,set runtimeMinutes to null
+runtimeMinutes outside 1-100000,title.basics,7,rows,set runtimeMinutes to null
+more than 3 genres,title.basics,0,rows,kept (do not truncate a real list)
+null or malformed nconst,name.basics,0,rows,drop row
+null primaryName,name.basics,89,rows,drop row
+duplicate nconst,name.basics,0,extra rows,keep one row
+birthYear not an integer,name.basics,0,rows,set birthYear to null
+birthYear outside 1-2026,name.basics,0,rows,set birthYear to null
+deathYear not an integer,name.basics,0,rows,set deathYear to null
+deathYear outside 1-2026,name.basics,0,rows,set deathYear to null
+"death year before birth year, birth year >= 1000",name.basics,10,rows,set birthYear and deathYear to null
+"death year before birth year, birth year < 1000",name.basics,18,rows,"kept (unsigned years, probably BC)"
+age at death over 125,name.basics,0,rows,kept (cannot tell which year is wrong)
+malformed knownForTitles id,name.basics,0,ids,remove that id
+knownForTitles id missing from title.basics,name.basics,218,ids,remove that id
+null or malformed tconst,title.ratings,0,rows,drop row
+duplicate tconst,title.ratings,0,extra rows,keep one row
+tconst missing from title.basics,title.ratings,0,rows,drop row
+averageRating not a number,title.ratings,0,rows,drop row
+averageRating outside 1-10,title.ratings,0,rows,drop row
+numVotes not an integer,title.ratings,0,rows,set numVotes to null
+numVotes < 1,title.ratings,0,rows,set numVotes to null
+null or malformed tconst,title.crew,0,rows,drop row
+duplicate tconst,title.crew,0,extra rows,keep one row
+tconst missing from title.basics,title.crew,0,rows,drop row
+malformed director id,title.crew,0,ids,remove that id
+director id missing from name.basics,title.crew,466,ids,remove that id
+malformed writer id,title.crew,0,ids,remove that id
+writer id missing from name.basics,title.crew,1203,ids,remove that id
+null or malformed tconst,title.episode,0,rows,drop row
+duplicate tconst,title.episode,0,extra rows,keep one row
+tconst missing from title.basics,title.episode,0,rows,drop row
+null or malformed parentTconst,title.episode,0,rows,drop row
+parentTconst missing from title.basics,title.episode,5,rows,drop row
+parent title is not tvSeries or tvMiniSeries,title.episode,0,rows,kept (parent row exists)
+title.basics type is not tvEpisode,title.episode,0,rows,kept (id exists)
+seasonNumber not an integer,title.episode,0,rows,set seasonNumber to null
+seasonNumber outside 1-300,title.episode,1363,rows,set seasonNumber to null
+episodeNumber not an integer,title.episode,0,rows,set episodeNumber to null
+episodeNumber outside 0-100000,title.episode,0,rows,set episodeNumber to null
+episodeNumber is 0,title.episode,7123,rows,kept (some series use episode 0)
+null or malformed tconst,title.principals,0,rows,drop row
+null or malformed nconst,title.principals,0,rows,drop row
+"ordering missing, non-numeric, or < 1",title.principals,0,rows,drop row
+"duplicate (tconst, ordering)",title.principals,0,extra rows,keep one row
+tconst missing from title.basics,title.principals,0,rows,drop row
+nconst missing from name.basics,title.principals,7976,rows,drop row
+null category,title.principals,0,rows,drop row
+characters is not a JSON list,title.principals,0,rows,set characters to null
+null or malformed titleId,title.akas,0,rows,drop row
+"ordering missing, non-numeric, or < 1",title.akas,0,rows,drop row
+"duplicate (titleId, ordering)",title.akas,0,extra rows,keep one row
+titleId missing from title.basics,title.akas,1,rows,drop row
+null title,title.akas,0,rows,drop row
+isOriginalTitle other than 0 or 1,title.akas,0,rows,set isOriginalTitle to null
+more than one isOriginalTitle = 1,title.akas,0,titles,kept (no way to pick the right row)
