@@ -6,4 +6,4 @@
 
 IMDb data preparation, exploration, enrichment, and Wikipedia streaming with Spark + Kafka.
 
-See [project instructions](https://github.com/adaltas/ece-big-data-processing-fall-2026/blob/main/project_instructions.md).
+See [`project_instructions.md`](./project_instructions.md) for the full subject and deliverables.
