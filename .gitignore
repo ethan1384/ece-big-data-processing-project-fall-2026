@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.env
+.python-version
+
+# Spark / data
+spark-warehouse/
+metastore_db/
+derby.log
+*.parquet
+data/raw/
+data/tmp/
+data/clean/
+checkpoints/
+.ipynb_checkpoints/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local tooling
+ai/
+.AGENT
+.CLAUDE
+agent-context.tgz
