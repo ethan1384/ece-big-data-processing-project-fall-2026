@@ -163,3 +163,89 @@ Foreign keys are the other case. A rating, credit, episode, or aka that points a
 `episodeNumber` 0 is kept. Several thousand episodes use it, and treating 0 as missing would delete a value the source actually stored. Season numbers above 300 are not kept: they are years, not seasons.
 
 Things we checked and did not find, so there was nothing to fix: duplicate primary keys, ratings outside 1–10, `endYear` sitting on a movie, and episode rows whose parent is not a series.
+
+# Data exploration
+
+Numbers below come from `python -m src.explore`. The CSV copies are in `output/part02/`.
+
+> TODO (group): paste the result tables after the run, then write each methodology in your own words. The course does not allow an AI-written explanation in this file.
+
+## Q1. Movies whose runtime is far from their genre average
+
+Output: `output/part02/q1_genre_runtime_summary.csv`, `output/part02/q1_runtime_outliers.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
+
+## Q2. Top three genres per year, 1980-2025
+
+Output: `output/part02/q2_top3_genres_by_year.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
+
+## Q3. Top three genres compared with the rest
+
+Output: `output/part02/q3_top3_vs_rest_by_year.csv`, `output/part02/q3_genre_top3_frequency.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
+
+## Q4. Directors with exactly one movie rated 8.0 or more
+
+Output: `output/part02/q4_one_hit_directors.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
+
+## Q5. Series whose best episode is early and worst episode is in the last season
+
+Output: `output/part02/q5_series_best_early_worst_last.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
+
+## Q6. Actors with successful movies in several languages
+
+Output: `output/part02/q6_language_coverage.csv`, `output/part02/q6_hit_movies_by_language.csv`, `output/part02/q6_actors_by_language_count.csv`, `output/part02/q6_hits_in_3plus_languages.csv`, `output/part02/q6_hits_in_2plus_languages.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
+
+## Q7. Actors whose best movies came early
+
+Output: `output/part02/q7_early_peak_actors.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
+
+## Q8. Multi-talented people
+
+Output: `output/part02/q8_multi_talent_counts.csv`, `output/part02/q8_combined_vs_single_by_roles.csv`, `output/part02/q8_multi_talent_people.csv`.
+
+TODO: results.
+
+### Methodology
+
+TODO: to be written by the group.
