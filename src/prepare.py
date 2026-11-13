@@ -39,7 +39,7 @@ def build_spark():
     spark = (
         SparkSession.builder.appName("imdb-data-preparation")
         .master("local[*]")
-        .config("spark.driver.memory", "16g")
+        .config("spark.driver.memory", os.environ.get("SPARK_DRIVER_MEMORY", "16g"))
         .config("spark.driver.maxResultSize", "2g")
         .config("spark.sql.shuffle.partitions", "64")
         .config("spark.sql.adaptive.enabled", "true")
@@ -49,7 +49,7 @@ def build_spark():
         .config("spark.sql.warehouse.dir", os.path.join(tmp, "warehouse"))
         .config(
             "spark.driver.extraJavaOptions",
-            "-Dderby.system.home=" + os.path.join(tmp, "derby"),
+            '-Dderby.system.home="' + os.path.join(tmp, "derby") + '"',
         )
         .getOrCreate()
     )
