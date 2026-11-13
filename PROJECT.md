@@ -56,12 +56,36 @@ Cleaned tables:
 
 Checked on this machine with Java 17 and Python 3.11. The job takes a while because `title.principals` and `title.akas` are large.
 
+## Data exploration
+
+Needs `data/clean/` from the preparation step.
+
+```bash
+python -m src.explore            # all eight questions
+python -m src.explore q4 q5      # only some of them
+```
+
+Each question writes CSV files to `output/part02/` (committed, like `output/part01/`). Thresholds (feature-length cutoff, minimum votes, what counts as a hit, ...) are constants at the top of `src/explore.py`.
+
+| Question | Files |
+| --- | --- |
+| q1 runtime outliers by genre | `q1_runtime_outliers.csv`, `q1_genre_runtime_summary.csv` |
+| q2 top 3 genres per year | `q2_top3_genres_by_year.csv` |
+| q3 top 3 vs other genres | `q3_top3_vs_rest_by_year.csv`, `q3_genre_top3_frequency.csv` |
+| q4 one-hit directors | `q4_one_hit_directors.csv` |
+| q5 series, best early / worst last | `q5_series_best_early_worst_last.csv` |
+| q6 actors with hits in several languages | `q6_hits_in_2plus_languages.csv`, `q6_hits_in_3plus_languages.csv`, `q6_actors_by_language_count.csv`, `q6_language_coverage.csv`, `q6_hit_movies_by_language.csv` |
+| q7 early-peak actors | `q7_early_peak_actors.csv` |
+| q8 multi-talented people | `q8_multi_talent_counts.csv`, `q8_multi_talent_people.csv`, `q8_combined_vs_single_by_roles.csv` |
+
 ## AI tools
 
 Cursor (Grok) was used to write the data-preparation code: the loader, the null profile, the quality checks, and the cleaning job. It was also used to draft the run steps in this file.
+
+Claude (Anthropic) was used to write the exploration code in `src/explore.py` (the eight queries of part 2) and its run steps in this file.
 
 The methodology in `REPORT.md` has to be rewritten by the group before the project is submitted. The course does not allow an AI-written explanation there.
 
 ## Not done yet
 
-Exploration, enrichment, streaming, and the open question are not implemented.
+Enrichment, streaming, and the open question are not implemented.
