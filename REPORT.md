@@ -269,11 +269,11 @@ Output: `output/part03/coverage_summary.csv`, `output/part03/coverage_films_by_y
 | Films with a synopsis from the Plot section | 5,889 | 86.34 |
 | Films with only the lead paragraph as synopsis | 384 | 5.63 |
 | Films with no synopsis | 548 | 8.03 |
-| Principal credits selected | 20,446 | 100.00 |
-| Distinct people | 10,150 | |
-| Credits whose person has a Wikipedia page | 17,813 | 87.12 |
-| Credits with a biography | 17,794 | 87.03 |
-| Films with 3 or more biographies | 5,255 | 77.04 |
+| Principal credits selected | 20,431 | 100.00 |
+| Distinct people | 10,479 | |
+| Credits whose person has a Wikipedia page | 17,748 | 86.87 |
+| Credits with a biography | 17,729 | 86.77 |
+| Films with 3 or more biographies | 5,197 | 76.19 |
 
 Missing information is flagged in the `notes` column of each row:
 
@@ -283,8 +283,8 @@ Missing information is flagged in the `notes` column of each row:
 | films | no_wikipedia_page | 491 |
 | films | no_plot_section_used_lead | 384 |
 | films | no_usable_synopsis | 57 |
-| principals | none (biography found) | 17,794 |
-| principals | no_wikipedia_page | 2,633 |
+| principals | none (biography found) | 17,729 |
+| principals | no_wikipedia_page | 2,683 |
 | principals | no_usable_biography | 19 |
 
 ### Methodology
