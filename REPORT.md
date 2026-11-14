@@ -249,3 +249,44 @@ TODO: results.
 ### Methodology
 
 TODO: to be written by the group.
+
+# Data enrichment
+
+Numbers below come from `python -m src.enrich`. The CSV copies are in `output/part03/`.
+
+> TODO (group): the methodology below is left empty on purpose. The course does not allow an AI-written explanation in this file.
+
+Scope: feature films from 1980 to 2025, top 10 per (year, genre) ranked by votes, 3 principals per film in IMDb billing order. A film that is top 10 in several genres is enriched once. Source: English Wikipedia, found through the IMDb id stored on Wikidata. Every row carries `source_url` (permalink to the Wikipedia revision), `wikidata_uri`, `revision_id` and `retrieved_at`.
+
+## Coverage
+
+Output: `output/part03/coverage_summary.csv`, `output/part03/coverage_films_by_year.csv`, `output/part03/coverage_notes.csv`, `output/part03/sample_films.csv`, `output/part03/sample_principals.csv`.
+
+| Metric | Count | % |
+| --- | ---: | ---: |
+| Films selected | 6,821 | 100.00 |
+| Films with a Wikipedia page | 6,330 | 92.80 |
+| Films with a synopsis from the Plot section | 5,889 | 86.34 |
+| Films with only the lead paragraph as synopsis | 384 | 5.63 |
+| Films with no synopsis | 548 | 8.03 |
+| Principal credits selected | 20,431 | 100.00 |
+| Distinct people | 10,479 | |
+| Credits whose person has a Wikipedia page | 17,748 | 86.87 |
+| Credits with a biography | 17,729 | 86.77 |
+| Films with 3 or more biographies | 5,197 | 76.19 |
+
+Missing information is flagged in the `notes` column of each row:
+
+| Table | Note | Rows |
+| --- | --- | ---: |
+| films | none (plot synopsis found) | 5,889 |
+| films | no_wikipedia_page | 491 |
+| films | no_plot_section_used_lead | 384 |
+| films | no_usable_synopsis | 57 |
+| principals | none (biography found) | 17,729 |
+| principals | no_wikipedia_page | 2,683 |
+| principals | no_usable_biography | 19 |
+
+### Methodology
+
+TODO: to be written by the group.

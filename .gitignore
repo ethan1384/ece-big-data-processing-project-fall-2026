@@ -33,3 +33,6 @@ ai/
 .AGENT
 .CLAUDE
 agent-context.tgz
+
+data/enrich/
+data/enriched/
