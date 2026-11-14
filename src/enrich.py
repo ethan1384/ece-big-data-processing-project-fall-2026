@@ -108,10 +108,15 @@ def select_targets(spark, t):
         ).alias("top_in")
     )
 
+    # A person can hold two principal rows on one film (actor and writer, say).
+    # Keep the first row so that N_PRINCIPALS means N different people.
+    first_row = Window.partitionBy("tconst", "nconst").orderBy("ordering")
     by_billing = Window.partitionBy("tconst").orderBy("ordering", "nconst")
     credits = (
         t["title_principals"]
         .join(films.select("tconst"), "tconst")
+        .withColumn("person_row", F.row_number().over(first_row))
+        .where(F.col("person_row") == 1)
         .withColumn("billing", F.row_number().over(by_billing))
         .where(F.col("billing") <= N_PRINCIPALS)
         .select("tconst", "nconst", "ordering", "category", "billing")
@@ -158,7 +163,8 @@ def fetch_all(film_ids, person_ids):
 
 def tidy(column):
     """Collapse whitespace, drop citation marks, and turn empty text into null."""
-    text = F.regexp_replace(column, r"\[(\d+|citation needed|[a-z])\]", "")
+    text = F.regexp_replace(column, r"\[\[(?:[^\]|]*\|)?([^\]]*)\]\]", "$1")
+    text = F.regexp_replace(text, r"\[(\d+|citation needed|[a-z])\]", "")
     text = F.regexp_replace(text, r"[ \t ]+", " ")
     text = F.regexp_replace(text, r" ?\n ?", "\n")
     text = F.regexp_replace(text, r"\n{3,}", "\n\n")
