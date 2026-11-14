@@ -290,3 +290,25 @@ Missing information is flagged in the `notes` column of each row:
 ### Methodology
 
 TODO: to be written by the group.
+
+# Streaming
+
+Numbers below come from `python -m src.stream report`. The CSV copies are in `output/part04/`.
+
+> TODO (group): paste the result tables after the run, then write the methodology and the late-data explanation in your own words. The course does not allow an AI-written explanation in this file.
+
+Output: `output/part04/run_summary.csv`, `output/part04/matches_by_type.csv`, `output/part04/window_counts.csv`, `output/part04/lateness_buckets.csv`, `output/part04/top_pages.csv`, `output/part04/sample_matches.csv`.
+
+TODO: results.
+
+## Filtering strategy
+
+TODO: to be written by the group.
+
+## Late arriving data
+
+TODO: to be written by the group.
+
+### Methodology
+
+TODO: to be written by the group.
