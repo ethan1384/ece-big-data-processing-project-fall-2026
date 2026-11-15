@@ -1,0 +1,8 @@
+metric,value
+"wikidata rows (film, series)",5072
+distinct series on wikidata,1224
+films matched to IMDb feature films with 1000+ votes,2131
+series kept (2 to 30 matched films),496
+films in kept series,1844
+"sequel pairs (film, previous film)",1469
+baseline pairs (director's next non-series film),29260

@@ -4,7 +4,7 @@ Numbers below come from `python -m src.prepare`. The CSV copies are in `output/p
 
 The dumps used are the public IMDb files from `datasets.imdbws.com` (daily refresh). `\N` and blank cells are counted as null. Percentages use the row count of that table, before any row is dropped.
 
-> The methodology section is a working draft. Rewrite it in your own words before submitting. The course does not allow an AI-written explanation in this file.
+> TODO: rewrite the methodology section below in our own words before submitting.
 
 ## Null, missing, and empty values
 
@@ -168,7 +168,7 @@ Things we checked and did not find, so there was nothing to fix: duplicate prima
 
 Numbers below come from `python -m src.explore`. The CSV copies are in `output/part02/`.
 
-> TODO (group): paste the result tables after the run, then write each methodology in your own words. The course does not allow an AI-written explanation in this file.
+> TODO: paste the result tables after the run, then write each methodology.
 
 ## Q1. Movies whose runtime is far from their genre average
 
@@ -254,7 +254,7 @@ TODO: to be written by the group.
 
 Numbers below come from `python -m src.enrich`. The CSV copies are in `output/part03/`.
 
-> TODO (group): the methodology below is left empty on purpose. The course does not allow an AI-written explanation in this file.
+> TODO: the methodology below is left empty on purpose.
 
 Scope: feature films from 1980 to 2025, top 10 per (year, genre) ranked by votes, 3 principals per film in IMDb billing order. A film that is top 10 in several genres is enriched once. Source: English Wikipedia, found through the IMDb id stored on Wikidata. Every row carries `source_url` (permalink to the Wikipedia revision), `wikidata_uri`, `revision_id` and `retrieved_at`.
 
@@ -295,7 +295,7 @@ TODO: to be written by the group.
 
 Numbers below come from `python -m src.stream report`. The CSV copies are in `output/part04/`.
 
-> TODO (group): paste the result tables after the run, then write the methodology and the late-data explanation in your own words. The course does not allow an AI-written explanation in this file.
+> TODO: paste the result tables after the run, then write the methodology and the late-data explanation.
 
 Output: `output/part04/run_summary.csv`, `output/part04/matches_by_type.csv`, `output/part04/window_counts.csv`, `output/part04/lateness_buckets.csv`, `output/part04/top_pages.csv`, `output/part04/sample_matches.csv`.
 
@@ -306,6 +306,30 @@ TODO: results.
 TODO: to be written by the group.
 
 ## Late arriving data
+
+TODO: to be written by the group.
+
+### Methodology
+
+TODO: to be written by the group.
+
+# Open question
+
+Numbers below come from `python -m src.open_question`. The CSV copies are in `output/part05/`.
+
+> TODO: the question, the motivation, the takeaways and the methodology are still to write.
+
+Output: `output/part05/coverage.csv`, `output/part05/sequel_vs_previous.csv`, `output/part05/sequel_vs_baseline.csv`, `output/part05/sequel_vs_baseline_overall.csv`, `output/part05/by_installment.csv`, `output/part05/continuity.csv`, `output/part05/by_gap.csv`, `output/part05/by_decade.csv`, `output/part05/by_genre.csv`, `output/part05/franchises.csv`, `output/part05/franchise_films.csv`.
+
+## Question, motivation and additional data
+
+TODO: to be written by the group.
+
+## Results
+
+TODO: results.
+
+## Key takeaways
 
 TODO: to be written by the group.
 

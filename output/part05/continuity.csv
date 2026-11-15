@@ -1,0 +1,5 @@
+same_director,lead_returns,pairs,mean_diff,median_diff,pct_lower,pct_higher
+False,False,489,-0.199,-0.3,57.1,37.8
+False,True,340,-0.338,-0.3,70.3,25.9
+True,False,199,-0.261,-0.2,58.8,33.7
+True,True,441,-0.259,-0.2,65.3,24.5

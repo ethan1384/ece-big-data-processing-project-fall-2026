@@ -1,0 +1,9 @@
+previous_film_rating,kind,pairs,mean_diff,median_diff,pct_lower,pct_higher
+6 to 7,"director next film, not a sequel",11518,-0.114,-0.1,50.2,44.0
+6 to 7,sequel,546,-0.227,-0.2,62.3,31.0
+7 to 8,"director next film, not a sequel",8354,-0.506,-0.4,70.5,23.8
+7 to 8,sequel,424,-0.457,-0.4,70.5,22.2
+8 and up,"director next film, not a sequel",1093,-0.924,-0.8,85.5,9.1
+8 and up,sequel,104,-0.708,-0.7,77.9,14.4
+below 6,"director next film, not a sequel",8295,0.419,0.4,32.2,63.8
+below 6,sequel,395,0.033,-0.1,51.4,43.0
