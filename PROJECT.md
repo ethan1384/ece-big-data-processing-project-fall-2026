@@ -2,8 +2,8 @@
 
 ## Contributors
 
-- Ethan Petain — ethan.petain@gmail.com — github [ethan1384](https://github.com/ethan1384)
-- Nicolas Cottez-Abrate — github [Nicolas-cottez](https://github.com/Nicolas-cottez) — email: fill in before submission
+- Ethan Petain - ethan.petain@gmail.com - github [ethan1384](https://github.com/ethan1384)
+- Nicolas Cottez-Abrate - nicolas.cottezabrate@edu.ece.fr - github [Nicolas-cottez](https://github.com/Nicolas-cottez)
 
 Group Gr-02.
 
@@ -174,11 +174,11 @@ Every row of `output/part05/franchise_films.csv` keeps the Wikidata URIs of the 
 
 ## AI tools
 
-We used AI assistants as coding tools, as the course allows, and kept them out of the analysis itself.
+We used AI assistants as coding tools, and kept them out of the analysis itself.
 
 How we worked with these tools:
 
-- We split the project into five parts, each on its own branch, and every pull request was reviewed by the other member before merging.
-- We ran every job ourselves on the full IMDb dumps and checked the results against films, directors and actors we know. Whenever a result looked wrong, we sent the code back for correction before merging: the original-language detection of exploration Q6, the career split of Q7, and the Spark start-up that failed on a path with spaces were all fixed this way.
-- Thresholds and definitions are named constants at the top of each script, so they can be read, questioned and changed.
-- The methodology, the reasoning and the takeaways in `REPORT.md` were written by the two of us together, without any AI tool.
+- We split the project into five parts. Each part has its own branch. And every pull request was reviewed by the other member before to merge.
+- We ran every job ourselves on the full IMDb dumps. Then we checked the results against films, directors, and actors we know. Whenever a result looked wrong, we sent the code back for correction before merging. The original-language detection of exploration Q6 was fixed this way. The career split of Q7 was fixed this way to. And the Spark start-up that failed on a path with spaces was fixed this way.
+- The thresholds and definitions are named constants. They are at the top of each script. So they can be read.
+- The methodology, the reasoning, and the takeaways in REPORT.md were written by the two of us together. And without any AI tool.
