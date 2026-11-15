@@ -1,0 +1,3 @@
+kind,pairs,mean_diff,median_diff,pct_lower,pct_higher
+"director next film, not a sequel",29260,-0.105,-0.1,52.2,42.5
+sequel,1469,-0.257,-0.2,62.8,30.5

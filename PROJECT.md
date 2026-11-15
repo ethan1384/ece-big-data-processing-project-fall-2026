@@ -144,18 +144,41 @@ bash scripts/kafka_local.sh stop
 | `output/part04/top_pages.csv` | most edited matched pages |
 | `output/part04/sample_matches.csv` | first matched edits, with a link to the diff |
 
+## Open question
+
+Question: do film sequels hold up against the film before them, and does keeping the director or the lead actor make a difference?
+
+Needs `data/clean/` from the preparation step and internet access (Wikidata).
+
+```bash
+python -m src.open_question             # fetch (if not cached), then analyze
+python -m src.open_question fetch       # only the Wikidata download (about 2 minutes)
+python -m src.open_question analyze     # only the Spark analysis
+```
+
+1. `fetch` (plain Python, the rate-limited client of `src/wikipedia.py`): two SPARQL queries to Wikidata list every film (classes "film" and "animated film") that has an IMDb id (P345) and belongs to a series (P179, "part of the series"). The answer is saved in `data/open/wikidata_series.jsonl`; `--refetch` downloads it again.
+2. `analyze` (Spark): joins the series to feature films with at least 1,000 votes, orders each series by release year, and compares every sequel with the film before it. Directors come from `title.crew`, the lead actor from `title.principals` (first billed actor or actress). The baseline is each director's next film that is not part of any series.
+
+Every row of `output/part05/franchise_films.csv` keeps the Wikidata URIs of the film and of the series, and the retrieval time.
+
+| Output | Contents |
+| --- | --- |
+| `output/part05/coverage.csv` | how many films and series were found and kept |
+| `output/part05/sequel_vs_previous.csv` | rating change from a film to its sequel, overall |
+| `output/part05/sequel_vs_baseline.csv`, `sequel_vs_baseline_overall.csv` | sequels against a director's next non-sequel film, by rating of the previous film |
+| `output/part05/by_installment.csv` | rating by position in the series (1st, 2nd, ...) |
+| `output/part05/continuity.csv` | rating change when the director and/or the lead actor come back |
+| `output/part05/by_gap.csv`, `by_decade.csv`, `by_genre.csv` | the same change by years between films, decade, genre |
+| `output/part05/franchises.csv` | each series with 3+ films: first, last, best installment |
+| `output/part05/franchise_films.csv` | every film of every kept series, with lineage |
+
 ## AI tools
 
-Cursor (Grok) was used to write the data-preparation code: the loader, the null profile, the quality checks, and the cleaning job. It was also used to draft the run steps in this file.
+We used AI assistants as coding tools, as the course allows, and kept them out of the analysis itself.
 
-Claude (Anthropic) was used to write the exploration code in `src/explore.py` (the eight queries of part 2) and its run steps in this file.
+How we worked with these tools:
 
-Claude (Anthropic) was also used to write the enrichment code in `src/enrich.py` and `src/wikipedia.py` (part 3) and its run steps in this file.
-
-Claude (Anthropic) was also used to write the streaming code in `src/wiki_producer.py`, `src/stream.py` and `scripts/kafka_local.sh` (part 4) and its run steps in this file.
-
-The methodology in `REPORT.md` has to be rewritten by the group before the project is submitted. The course does not allow an AI-written explanation there.
-
-## Not done yet
-
-The open question is not implemented.
+- We split the project into five parts, each on its own branch, and every pull request was reviewed by the other member before merging.
+- We ran every job ourselves on the full IMDb dumps and checked the results against films, directors and actors we know. Whenever a result looked wrong, we sent the code back for correction before merging: the original-language detection of exploration Q6, the career split of Q7, and the Spark start-up that failed on a path with spaces were all fixed this way.
+- Thresholds and definitions are named constants at the top of each script, so they can be read, questioned and changed.
+- The methodology, the reasoning and the takeaways in `REPORT.md` were written by the two of us together, without any AI tool.

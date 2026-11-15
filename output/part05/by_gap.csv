@@ -1,0 +1,5 @@
+gap,pairs,mean_diff,median_diff,pct_lower,pct_higher
+0-2 years,764,-0.173,-0.2,59.0,33.4
+3-5 years,413,-0.404,-0.4,71.2,24.2
+6-10 years,169,-0.312,-0.3,65.1,26.6
+more than 10 years,123,-0.214,-0.3,55.3,39.0
