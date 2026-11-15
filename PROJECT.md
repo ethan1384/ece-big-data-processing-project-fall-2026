@@ -104,6 +104,46 @@ Every enriched row carries `source_url` (a permalink to the exact Wikipedia revi
 | `output/part03/coverage_notes.csv` | count of each "missing" note |
 | `output/part03/sample_films.csv`, `sample_principals.csv` | readable sample of the output |
 
+## Streaming
+
+Needs Java 17, `data/clean/` from the preparation step, and internet access (Kafka download, Spark's Kafka connector from Maven Central, and `stream.wikimedia.org`). The `wikidata_page` match type also uses the part 3 cache (`data/enrich/cache/wikidata.jsonl`); without it the other match types still work.
+
+Kafka runs as a single local broker in KRaft mode (no ZooKeeper). The script downloads Kafka 3.9.0 into `~/.local/share/imdb-kafka` on the first run, starts it on `localhost:9092`, and creates the topic `wiki-recentchange`. With Docker, `docker run -d --name kafka -p 9092:9092 apache/kafka:3.9.0` works too (the topic is then created by the producer).
+
+Use three terminals, all at the repository root with the virtual environment active:
+
+```bash
+# terminal 1: Kafka, then the IMDb lookup tables (once, a few minutes)
+bash scripts/kafka_local.sh start
+python -m src.stream lookup
+
+# terminal 2: Wikimedia -> Kafka (5% of events held back 10 minutes to test late data)
+python -m src.wiki_producer --minutes 30 --late-share 0.05 --late-delay 600
+
+# terminal 3: the Spark Structured Streaming job, then the summary
+python -m src.stream run --minutes 25 --fresh
+python -m src.stream report
+
+# afterwards
+bash scripts/kafka_local.sh stop
+```
+
+1. `src/wiki_producer.py` (plain Python): reads Wikimedia's recent-change stream (Server-Sent Events, every edit of every wiki) and writes each event unchanged to Kafka. It resumes with `Last-Event-ID` after a dropped connection.
+2. `python -m src.stream lookup` (Spark batch): builds the IMDb lookup tables in `data/stream/lookup/` from feature films with at least 1,000 votes and the actors, actresses, directors and writers credited on them.
+3. `python -m src.stream run` (Spark Structured Streaming): reads the topic, keeps English Wikipedia article edits, matches the page to a film or a person through the lookup tables (stream-static joins), and runs two queries every 30 seconds: every matched edit goes to `data/stream/matches/`, and edit counts per 2-minute event-time window go to `data/stream/windows/` with a 5-minute watermark. Progress (rows read, watermark, rows dropped as late) is logged to `data/stream/progress.jsonl`.
+4. `python -m src.stream report` (Spark batch): writes the CSV summaries in `output/part04/`.
+
+`--fresh` deletes the previous outputs and checkpoints; without it a stopped job resumes from its checkpoint. Spark downloads `spark-sql-kafka-0-10_2.12:3.5.4` on the first run.
+
+| Output | Contents |
+| --- | --- |
+| `output/part04/run_summary.csv` | events read, matches, matches per minute, lateness, rows dropped by the watermark |
+| `output/part04/matches_by_type.csv` | matched edits per match type |
+| `output/part04/window_counts.csv` | edits per 2-minute window and match type (closed windows only) |
+| `output/part04/lateness_buckets.csv` | how late the matched edits reached Kafka |
+| `output/part04/top_pages.csv` | most edited matched pages |
+| `output/part04/sample_matches.csv` | first matched edits, with a link to the diff |
+
 ## AI tools
 
 Cursor (Grok) was used to write the data-preparation code: the loader, the null profile, the quality checks, and the cleaning job. It was also used to draft the run steps in this file.
@@ -112,8 +152,10 @@ Claude (Anthropic) was used to write the exploration code in `src/explore.py` (t
 
 Claude (Anthropic) was also used to write the enrichment code in `src/enrich.py` and `src/wikipedia.py` (part 3) and its run steps in this file.
 
+Claude (Anthropic) was also used to write the streaming code in `src/wiki_producer.py`, `src/stream.py` and `scripts/kafka_local.sh` (part 4) and its run steps in this file.
+
 The methodology in `REPORT.md` has to be rewritten by the group before the project is submitted. The course does not allow an AI-written explanation there.
 
 ## Not done yet
 
-Streaming and the open question are not implemented.
+The open question is not implemented.

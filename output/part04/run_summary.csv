@@ -1,0 +1,16 @@
+metric,value
+kafka events read (all wikis),52027
+micro-batches with data,51
+enwiki article edits in closed windows,1547
+matched edits in closed windows,41
+"matched edits (all, deduplicated)",53
+matched edits per minute,2.07
+distinct pages matched,45
+distinct IMDb ids matched,45
+matched edits made by bots,0
+event time span (minutes),25.6
+lateness p50 (s),3
+lateness p95 (s),8
+lateness max (s),603
+matched edits later than the 300s watermark,1
+"late partial aggregates dropped by the watermark (Spark metric, not events)",30

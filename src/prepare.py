@@ -29,14 +29,15 @@ from src.quality import find_issues
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def build_spark():
+def build_spark(extra_conf=None):
+    """Local Spark session; extra_conf adds or overrides settings (part 4 adds Kafka)."""
     tmp = os.path.join(ROOT, "data", "tmp")
     os.makedirs(os.path.join(tmp, "derby"), exist_ok=True)
     os.makedirs(os.path.join(tmp, "spark"), exist_ok=True)
     os.environ["PYSPARK_PYTHON"] = sys.executable
     os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
     os.environ["SPARK_LOCAL_IP"] = "127.0.0.1"
-    spark = (
+    builder = (
         SparkSession.builder.appName("imdb-data-preparation")
         .master("local[*]")
         .config("spark.driver.memory", os.environ.get("SPARK_DRIVER_MEMORY", "16g"))
@@ -51,8 +52,10 @@ def build_spark():
             "spark.driver.extraJavaOptions",
             '-Dderby.system.home="' + os.path.join(tmp, "derby") + '"',
         )
-        .getOrCreate()
     )
+    for key, value in (extra_conf or {}).items():
+        builder = builder.config(key, value)
+    spark = builder.getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
     return spark
 

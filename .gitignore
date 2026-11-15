@@ -16,6 +16,7 @@ spark-warehouse/
 metastore_db/
 derby.log
 *.parquet
+/data
 data/raw/
 data/tmp/
 data/clean/
@@ -23,6 +24,7 @@ checkpoints/
 .ipynb_checkpoints/
 
 # IDE / OS
+._*
 .idea/
 .vscode/
 *.swp
@@ -36,3 +38,4 @@ agent-context.tgz
 
 data/enrich/
 data/enriched/
+data/stream/
