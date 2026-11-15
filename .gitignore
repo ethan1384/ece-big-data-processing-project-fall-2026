@@ -20,6 +20,10 @@ derby.log
 data/raw/
 data/tmp/
 data/clean/
+data/enrich/
+data/enriched/
+data/stream/
+data/open/
 checkpoints/
 .ipynb_checkpoints/
 
@@ -29,14 +33,3 @@ checkpoints/
 .vscode/
 *.swp
 .DS_Store
-
-# Local tooling
-ai/
-.AGENT
-.CLAUDE
-agent-context.tgz
-
-data/enrich/
-data/enriched/
-data/stream/
-data/open/

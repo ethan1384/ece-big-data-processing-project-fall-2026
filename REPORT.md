@@ -1,338 +1,94 @@
-# REPORT
+# ECE Big Data Processing: Report
 
-Numbers below come from `python -m src.prepare`. The CSV copies are in `output/part01/`.
+**Group Contributors** · Ethan Petain and Nicolas Cottez-Abrate
 
-The dumps used are the public IMDb files from `datasets.imdbws.com` (daily refresh). `\N` and blank cells are counted as null. Percentages use the row count of that table, before any row is dropped.
+## 1. Data preparation
 
-> TODO: rewrite the methodology section below in our own words before submitting.
+All seven IMDb tables were profiled before cleaning. The table shows the five columns with the most missing values. The full exports cover [every column](output/part01/null_percentages.csv), [all quality checks](output/part01/quality_issues.csv) and [row counts before and after cleaning](output/part01/cleaning_summary.csv).
 
-## Null, missing, and empty values
+| Column | Missing |
+| --- | ---: |
+| `title.akas.attributes` | 99.47% |
+| `title.basics.endYear` | 98.73% |
+| `name.basics.deathYear` | 98.32% |
+| `name.basics.birthYear` | 95.66% |
+| `title.principals.job` | 80.66% |
 
-### name.basics
+**Methodology.** Spark transformed the missing-value markers and the blank fields into nulls. Then it divided the number of nulls by the total number of rows. Many of these nulls are expected. A film has no series end year, for example. Deleting every incomplete row would throw away valid records. Filling in dates or runtimes would add values with nothing to back them.
 
-15,808,370 rows.
+The cleaning set seven invalid runtimes to null. It also set 1,363 out-of-range season numbers to null. Ten people had birth and death years that contradicted each other. A pair is suspicious when deathYear is before birthYear. If the birth year is before 1000, we keep the pair. These are probably BC dates without the sign. Eighteen older pairs were kept this way. If the years are from 1000 or after, we set both years to null. Not only the death year. Because we don't know which of the two years is wrong. Rows whose required parent was missing were removed. This includes 7,987 principal credits after the person table was cleaned. In the director, writer and known-for arrays, only the broken identifiers were dropped.
 
-| Column | Nulls | Null % |
+
+
+## 2. Data exploration
+
+A feature film here is an IMDb movie that is not marked adult, has a known release year and runs at least 40 minutes. The [full exploration exports](output/part02/) hold the result lists for all eight questions.
+
+| Question | Method and main result |
+| --- | --- |
+| Q1 · Runtime outliers | In genres with at least 30 films, a film-genre pair is flagged when its log runtime is three standard deviations or more from the genre mean. **4,791 pairs** were flagged, covering **3,720 films**. [Full list](output/part02/q1_runtime_outliers.csv) |
+| Q2 · Top three genres | For each release year from 1980 to 2025, genres were ranked by total IMDb votes. **Drama** made the top three every year and came first **42 times**. [All 46 rankings](output/part02/q2_top3_genres_by_year.csv) |
+| Q3 · Top three vs. the rest | Depending on the year, the top three took **38.3% to 58.3%** of genre-attributed votes. In 2025 they averaged **3,405 votes per film-genre pair**, against **3,717** for the other genres. [Year-by-year comparison](output/part02/q3_top3_vs_rest_by_year.csv) |
+| Q4 · Directors with one highly rated film | **168 directors** had exactly one film rated 8.0 or higher, plus at least two other eligible films averaging 6.0 or less. Every film needed at least 100 votes. [Directors](output/part02/q4_one_hit_directors.csv) |
+| Q5 · Best episode early, worst episode last | **272 series** qualified. Each had at least three observed seasons, with at least ten listed episodes in every season. Only episodes with 20 votes or more were compared, and ties across the compared seasons were excluded. [Series](output/part02/q5_series_best_early_worst_last.csv) |
+| Q6 · Successful films across languages | A successful film had at least 1,000 votes and a rating of 7.0 or more. The pipeline estimated a language for **12,917 of 14,158** of these films. **3,605 performers** had successes in [two or more estimated languages](output/part02/q6_hits_in_2plus_languages.csv), and **605** of them in [three or more](output/part02/q6_hits_in_3plus_languages.csv). |
+| Q7 · Early career peak | **2,093 performers** had at least 15 eligible films over 20 years or more, their best-rated film in roughly the first third, and a first-half mean at least 0.5 points above the second-half mean. Every film needed at least 100 votes. [Performers](output/part02/q7_early_peak_actors.csv) |
+| Q8 · Multiple roles on the same film | **31,653 people** had at least three feature credits in each of two or more roles. For the **12,585** with rated films of both kinds, the mean within-person difference was only **+0.023 points** in favour of combined roles. [Role counts](output/part02/q8_multi_talent_counts.csv) · [Rating comparison](output/part02/q8_combined_vs_single_by_roles.csv) |
+
+**Methodology and trade-offs.** For Q1, we could have used the raw minutes. But a few films are extremely long. And with the raw minutes, they would dominate the results. So we used the log of the runtime.
+Vote totals measure engagement on IMDb. But they also grow with the number of films in a genre. And each film adds its votes to every genre it belongs to. The rating thresholds limit the weight of titles that have very few votes. But this reduces the coverage.
+
+Q6 estimates the language of a film. It uses alternate-title records, regions, and the language candidates that recur across a director's films. A real original-language field would be a sounder basis than this estimation.
+Q7 splits careers by the number of films. A split by calendar years can leave one half with very few films.
+Film ratings measure how the film was received.
+Q8 compares each person with their own single-role work. This reduces the differences between people. But the projects they choose can still skew the comparison.
+
+## 3. Data enrichment
+
+Spark took the ten most-voted feature films, for each release year and genre, from 1980 to 2025. Then it took up to three distinct principals per film, in IMDb billing order. Wikidata linked the IMDb IDs to English Wikipedia articles. The output keep the source revision URL when there is one, and flag missing content.
+
+| Metric | Result |
+| --- | ---: |
+| Films selected | 6,821 |
+| Films with plot text | 5,889 (86.34%) |
+| Films using the article lead as fallback | 384 (5.63%) |
+| Films without a synopsis | 548 (8.03%) |
+| Principal credits with a biography | 17,729 of 20,431 (86.77%) |
+| Films with three biographies | 5,197 (76.19%) |
+
+See [coverage by year](output/part03/coverage_films_by_year.csv), [missing-content flags](output/part03/coverage_notes.csv) and [all enrichment exports](output/part03/).
+
+**Methodology and trade-offs.** Matching on IMDb identifiers avoids many collisions between titles and names. A rate-limited Python client caches the responses. Spark does the joins, the schema enforcement, and the final text cleaning. Python also strip the plot markup during retrieval. So part of the preprocessing happens outside Spark. One source keeps attribution simple, but it limits the coverage. We did not add a second source when the Wikipedia content is missing. This is a voluntary choice. The principals follow a fixed billing order, with no substitutes. So 1,624 films ended up with fewer than three biographies. The driver-side collection also means these results say little about how the pipeline would scale to the full dataset.
+
+## 4. Streaming
+
+Wikimedia recent-change events went through Kafka into Spark Structured Streaming. The filter kept edits to English Wikipedia articles. It matched them to the IMDb on resolved page titles. It also matched them on film titles with or without a release year. And it matched them on the names of credited professionals.
+
+| Metric | Result |
+| --- | ---: |
+| Kafka events read across all wikis | 52,027 |
+| Distinct matched edits | 53 |
+| Distinct pages matched | 45 |
+| Time between first and last matched edits | 25.6 min |
+| Matched edits in finalized windows | 41 |
+| Median / 95th percentile arrival delay | 3 s / 8 s |
+| Maximum matched arrival delay | 603 s |
+
+Of the 53 matches, 43 came from person names, eight from film titles and two from film titles with a year. Name matches can be ambiguous. See the [run summary](output/part04/run_summary.csv), [match breakdown](output/part04/matches_by_type.csv) and [window counts](output/part04/window_counts.csv).
+
+**Methodology and late data.** The two-minute windows use the Wikipedia edit timestamp. So a delayed edit is counted in the window when it actually happened. The watermark is five minutes. This is enough for most of the delays we observed in the data. And it does not keep the windows open too long. A longer watermark would keep more late edits. But the final counts would be published later. The edit that reached Kafka after 603 seconds was kept in the separate match output. The exports can't say how much of the gap between the 53 recorded matches and the 41 finalized ones comes from late arrivals. Open windows and different deduplication also affect the totals. Spark reported 30 dropped partial aggregates.
+
+## 5. Open question · Do sequels hold up?
+
+**Question.** Does a later film in a series get the same rating as the one before it? Does the change depend on keeping the director? Or on bringing back the previous lead actor? The analysis also checks whether the pattern differs with continuity. And it compares it with the director's next film, outside the retrieved series set. A sequel usually comes out after a successful film. So a drop in the rating can be a regression to the mean. This is why the question is interesting.
+
+| Comparison | Pairs | Mean rating change |
 | --- | ---: | ---: |
-| nconst | 0 | 0.00 |
-| primaryName | 89 | 0.00 |
-| birthYear | 15,122,576 | 95.66 |
-| deathYear | 15,542,928 | 98.32 |
-| primaryProfession | 3,218,607 | 20.36 |
-| knownForTitles | 1,916,507 | 12.12 |
+| Later entry vs. previous entry | 1,469 | −0.257 |
+| Director's next film outside the retrieved series set | 29,260 | −0.105 |
+| Both director and previous lead retained | 441 | −0.259 |
+| Neither identified as returning | 489 | −0.199 |
 
-### title.akas
+**Methodology and trade-offs.** Wikidata series memberships were joined to IMDb titles, ratings, directors, and principal acting credits. The join kept films with at least 1,000 votes. Within each series, films were sorted by release year and IMDb ID. Then they were compared with the previous retained entry. Membership identifiers avoid to guess from film names. But verified predecessor links would separate direct sequels from reboots and spin-offs more reliably. A director counts as kept when the two films share at least one director. The previous lead counts as returning when they appear among the sequel's principal acting credits.
 
-60,353,877 rows.
-
-| Column | Nulls | Null % |
-| --- | ---: | ---: |
-| titleId | 0 | 0.00 |
-| ordering | 0 | 0.00 |
-| title | 0 | 0.00 |
-| region | 12,993,626 | 21.53 |
-| language | 19,649,615 | 32.56 |
-| types | 40,349,110 | 66.85 |
-| attributes | 60,036,655 | 99.47 |
-| isOriginalTitle | 0 | 0.00 |
-
-### title.basics
-
-12,953,566 rows.
-
-| Column | Nulls | Null % |
-| --- | ---: | ---: |
-| tconst | 0 | 0.00 |
-| titleType | 0 | 0.00 |
-| primaryTitle | 0 | 0.00 |
-| originalTitle | 0 | 0.00 |
-| isAdult | 0 | 0.00 |
-| startYear | 1,487,454 | 11.48 |
-| endYear | 12,789,170 | 98.73 |
-| runtimeMinutes | 8,053,410 | 62.17 |
-| genres | 547,893 | 4.23 |
-
-### title.crew
-
-12,953,566 rows.
-
-| Column | Nulls | Null % |
-| --- | ---: | ---: |
-| tconst | 0 | 0.00 |
-| directors | 5,785,700 | 44.66 |
-| writers | 6,426,788 | 49.61 |
-
-### title.episode
-
-10,026,289 rows.
-
-| Column | Nulls | Null % |
-| --- | ---: | ---: |
-| tconst | 0 | 0.00 |
-| parentTconst | 0 | 0.00 |
-| seasonNumber | 2,120,813 | 21.15 |
-| episodeNumber | 2,120,813 | 21.15 |
-
-### title.principals
-
-102,713,417 rows.
-
-| Column | Nulls | Null % |
-| --- | ---: | ---: |
-| tconst | 0 | 0.00 |
-| ordering | 0 | 0.00 |
-| nconst | 0 | 0.00 |
-| category | 0 | 0.00 |
-| job | 82,849,061 | 80.66 |
-| characters | 52,669,159 | 51.28 |
-
-### title.ratings
-
-1,731,454 rows. `tconst`, `averageRating`, and `numVotes` are all filled (0% null).
-
-## Five columns with the most nulls
-
-| Rank | Column | Null % |
-| --- | --- | ---: |
-| 1 | title.akas.attributes | 99.47 |
-| 2 | title.basics.endYear | 98.73 |
-| 3 | name.basics.deathYear | 98.32 |
-| 4 | name.basics.birthYear | 95.66 |
-| 5 | title.principals.job | 80.66 |
-
-`endYear` is empty for anything that is not a series (about 12.6 million of 13.0 million titles are not `tvSeries` or `tvMiniSeries`). `deathYear` is empty for people who are alive or whose death was never recorded. `attributes` and `job` are optional labels, not broken keys. `birthYear` is simply missing for most names. None of these were filled in.
-
-## Other quality issues
-
-Checks that came back empty are listed in `output/part01/quality_issues.csv` (duplicate keys, ratings outside 1–10, orphan ratings, `endYear` on a non-series, genres longer than 3, and so on). The hits are below.
-
-| Issue | Affected | What the job does |
-| --- | ---: | --- |
-| startYear after 2036 (the only value is 2115) | 1 title | `startYear` set to null |
-| runtimeMinutes is 0, or above 100,000 | 7 titles | `runtimeMinutes` set to null |
-| primaryName null | 89 people | row dropped |
-| death year before birth year, and birth year is 1000 or later | 10 people | both years set to null |
-| death year before birth year, birth year before 1000 | 18 people | kept |
-| knownForTitles id not in title.basics | 218 ids | id removed, person kept |
-| director id not in name.basics | 466 ids | id removed, title kept |
-| writer id not in name.basics | 1,203 ids | id removed, title kept |
-| episode parentTconst not in title.basics | 5 episodes | row dropped |
-| seasonNumber above 300 | 1,363 episodes | `seasonNumber` set to null |
-| episodeNumber is 0 | 7,123 episodes | kept |
-| principal nconst not in name.basics | 7,976 credits | row dropped |
-| aka titleId not in title.basics | 1 row | row dropped |
-
-Parsed ranges before cleaning: `startYear` 1874–2115, `runtimeMinutes` 0–3,692,080, `birthYear` 4–2026, `deathYear` 17–2026.
-
-The seven bad runtimes are four shorts with runtime 0, plus *The Angry Grandpa Show* (3,692,080), *Love Link TV the Mixer* (1,000,000), and *Shree Haricharitramrut Sagar* (146,445). *Logistics* (51,420 minutes) and *Ambiancé* (43,200) stay, because those runtimes are real.
-
-The 1,363 bad seasons are mostly a calendar year written into `seasonNumber` (2024, 2025, 2009, …), plus a couple of junk values (947, 1000).
-
-The 18 early “death before birth” rows are people like Homer (850 / 800) and Plato (427 / 347). IMDb stores years BC as positive numbers, so a smaller death year does not mean they died before they were born. The 10 later ones (for example A. Maneck, 1899 / 1867) really are inconsistent, and it is not obvious which of the two years is wrong.
-
-Principal rows removed: 7,987. That is the 7,976 dangling `nconst` values, plus 11 credits that pointed at one of the 89 people dropped for a missing name.
-
-## Rows after cleaning
-
-| Table | In | Out | Dropped |
-| --- | ---: | ---: | ---: |
-| title.basics | 12,953,566 | 12,953,566 | 0 |
-| name.basics | 15,808,370 | 15,808,281 | 89 |
-| title.ratings | 1,731,454 | 1,731,454 | 0 |
-| title.crew | 12,953,566 | 12,953,566 | 0 |
-| title.episode | 10,026,289 | 10,026,284 | 5 |
-| title.principals | 102,713,417 | 102,705,430 | 7,987 |
-| title.akas | 60,353,877 | 60,353,876 | 1 |
-
-Cleaned Parquet is under `data/clean/`. Array columns (`genres`, `directors`, `writers`, `primaryProfession`, `knownForTitles`) are real arrays, not comma-separated strings. `title.akas.titleId` is still the title id; it joins to `title.basics.tconst`.
-
-## Methodology
-
-Draft, to be rewritten by the group.
-
-Nulls were counted on the files as published, after turning `\N` and blanks into null and before dropping anything. A percentage of nulls is what the question asks for. Counting only “surprising” nulls would have hidden `endYear` and `deathYear`, which are the whole top of the ranking.
-
-We did not impute those columns. A mean runtime, a fake death year, or the string `"unknown"` would look like a real value in the exploration queries. Leaving the null is the smaller lie. Dropping every row that has any null would delete almost every movie, because `endYear` is null on purpose.
-
-Impossible values are cleared on the cell, and the row stays. One title with `startYear` 2115 is still a title. A runtime of 0 or of several million minutes is not a runtime. The cutoff for runtime is 100,000 minutes so that *Logistics* (about 857 hours) is kept and the obvious garbage is not.
-
-Foreign keys are the other case. A rating, credit, episode, or aka that points at a missing title or person cannot be joined, so the child row is dropped. Inside `directors`, `writers`, and `knownForTitles`, only the bad id is removed. Dropping the whole person because one `knownForTitles` id is stale would throw away a good row for a single broken token.
-
-`deathYear < birthYear` is not one problem. Under year 1000 it matches the way IMDb writes BC dates, so those rows are kept. From year 1000 up, the pair disagrees and either year could be the typo (Ahmad Shawqi is stored as 1968–1932; the death year is the plausible one). Both years are set to null rather than guessing. The alternative was to always null `deathYear`. That keeps a wrong birth year and deletes the year that was sometimes right.
-
-`episodeNumber` 0 is kept. Several thousand episodes use it, and treating 0 as missing would delete a value the source actually stored. Season numbers above 300 are not kept: they are years, not seasons.
-
-Things we checked and did not find, so there was nothing to fix: duplicate primary keys, ratings outside 1–10, `endYear` sitting on a movie, and episode rows whose parent is not a series.
-
-# Data exploration
-
-Numbers below come from `python -m src.explore`. The CSV copies are in `output/part02/`.
-
-> TODO: paste the result tables after the run, then write each methodology.
-
-## Q1. Movies whose runtime is far from their genre average
-
-Output: `output/part02/q1_genre_runtime_summary.csv`, `output/part02/q1_runtime_outliers.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-## Q2. Top three genres per year, 1980-2025
-
-Output: `output/part02/q2_top3_genres_by_year.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-## Q3. Top three genres compared with the rest
-
-Output: `output/part02/q3_top3_vs_rest_by_year.csv`, `output/part02/q3_genre_top3_frequency.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-## Q4. Directors with exactly one movie rated 8.0 or more
-
-Output: `output/part02/q4_one_hit_directors.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-## Q5. Series whose best episode is early and worst episode is in the last season
-
-Output: `output/part02/q5_series_best_early_worst_last.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-## Q6. Actors with successful movies in several languages
-
-Output: `output/part02/q6_language_coverage.csv`, `output/part02/q6_hit_movies_by_language.csv`, `output/part02/q6_actors_by_language_count.csv`, `output/part02/q6_hits_in_3plus_languages.csv`, `output/part02/q6_hits_in_2plus_languages.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-## Q7. Actors whose best movies came early
-
-Output: `output/part02/q7_early_peak_actors.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-## Q8. Multi-talented people
-
-Output: `output/part02/q8_multi_talent_counts.csv`, `output/part02/q8_combined_vs_single_by_roles.csv`, `output/part02/q8_multi_talent_people.csv`.
-
-TODO: results.
-
-### Methodology
-
-TODO: to be written by the group.
-
-# Data enrichment
-
-Numbers below come from `python -m src.enrich`. The CSV copies are in `output/part03/`.
-
-> TODO: the methodology below is left empty on purpose.
-
-Scope: feature films from 1980 to 2025, top 10 per (year, genre) ranked by votes, 3 principals per film in IMDb billing order. A film that is top 10 in several genres is enriched once. Source: English Wikipedia, found through the IMDb id stored on Wikidata. Every row carries `source_url` (permalink to the Wikipedia revision), `wikidata_uri`, `revision_id` and `retrieved_at`.
-
-## Coverage
-
-Output: `output/part03/coverage_summary.csv`, `output/part03/coverage_films_by_year.csv`, `output/part03/coverage_notes.csv`, `output/part03/sample_films.csv`, `output/part03/sample_principals.csv`.
-
-| Metric | Count | % |
-| --- | ---: | ---: |
-| Films selected | 6,821 | 100.00 |
-| Films with a Wikipedia page | 6,330 | 92.80 |
-| Films with a synopsis from the Plot section | 5,889 | 86.34 |
-| Films with only the lead paragraph as synopsis | 384 | 5.63 |
-| Films with no synopsis | 548 | 8.03 |
-| Principal credits selected | 20,431 | 100.00 |
-| Distinct people | 10,479 | |
-| Credits whose person has a Wikipedia page | 17,748 | 86.87 |
-| Credits with a biography | 17,729 | 86.77 |
-| Films with 3 or more biographies | 5,197 | 76.19 |
-
-Missing information is flagged in the `notes` column of each row:
-
-| Table | Note | Rows |
-| --- | --- | ---: |
-| films | none (plot synopsis found) | 5,889 |
-| films | no_wikipedia_page | 491 |
-| films | no_plot_section_used_lead | 384 |
-| films | no_usable_synopsis | 57 |
-| principals | none (biography found) | 17,729 |
-| principals | no_wikipedia_page | 2,683 |
-| principals | no_usable_biography | 19 |
-
-### Methodology
-
-TODO: to be written by the group.
-
-# Streaming
-
-Numbers below come from `python -m src.stream report`. The CSV copies are in `output/part04/`.
-
-> TODO: paste the result tables after the run, then write the methodology and the late-data explanation.
-
-Output: `output/part04/run_summary.csv`, `output/part04/matches_by_type.csv`, `output/part04/window_counts.csv`, `output/part04/lateness_buckets.csv`, `output/part04/top_pages.csv`, `output/part04/sample_matches.csv`.
-
-TODO: results.
-
-## Filtering strategy
-
-TODO: to be written by the group.
-
-## Late arriving data
-
-TODO: to be written by the group.
-
-### Methodology
-
-TODO: to be written by the group.
-
-# Open question
-
-Numbers below come from `python -m src.open_question`. The CSV copies are in `output/part05/`.
-
-> TODO: the question, the motivation, the takeaways and the methodology are still to write.
-
-Output: `output/part05/coverage.csv`, `output/part05/sequel_vs_previous.csv`, `output/part05/sequel_vs_baseline.csv`, `output/part05/sequel_vs_baseline_overall.csv`, `output/part05/by_installment.csv`, `output/part05/continuity.csv`, `output/part05/by_gap.csv`, `output/part05/by_decade.csv`, `output/part05/by_genre.csv`, `output/part05/franchises.csv`, `output/part05/franchise_films.csv`.
-
-## Question, motivation and additional data
-
-TODO: to be written by the group.
-
-## Results
-
-TODO: results.
-
-## Key takeaways
-
-TODO: to be written by the group.
-
-### Methodology
-
-TODO: to be written by the group.
+**Result.** The later entry scored lower in 62.8% of pairs. The baseline dropped less overall. But that order did not held in every prior-rating group. Returning contributors did not consistently go with a smaller drop. Incomplete membership data limit what these descriptive comparisons can show. And differences between groups limit it too. [Overall results](output/part05/sequel_vs_previous.csv) · [Baseline by prior rating](output/part05/sequel_vs_baseline.csv) · [Continuity](output/part05/continuity.csv) · [All open-question exports](output/part05/)
